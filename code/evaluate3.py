@@ -4,15 +4,15 @@ from Data2 import *
 
 
 def get_test_word_vector(start, q, item, word):
-    #train_file_dir = './'
-    #train_file_name = 'train.1.json'
-    #[q, item] = process_train_file(train_file_dir, train_file_name)
+    # train_file_dir = './'
+    # train_file_name = 'train.1.json'
+    # [q, item] = process_train_file(train_file_dir, train_file_name)
     question_matrix = []
     answer_matrix = []
     gensim_model = "wiki.zh.text.model"
     model = gensim.models.Word2Vec.load(gensim_model)
 
-    for i in range(start, start+5, 1):
+    for i in range(start, start + 5, 1):
         question_matrix.append([])
         count_q = 0
         for j in range(len(q[i])):
@@ -22,15 +22,15 @@ def get_test_word_vector(start, q, item, word):
             if np.all(temp == 0):
                 continue
             count_q = count_q + 1
-            question_matrix[i-start].append(temp)
-        #print count_q
- 
-    for i in range(start, start+5, 1):
+            question_matrix[i - start].append(temp)
+            # print count_q
+
+    for i in range(start, start + 5, 1):
         answer_matrix.append([])
         for j in range(len(item[i])):
             count_a = 0
-            answer_matrix[i-start].append([])
-            #print len(item[i][j])
+            answer_matrix[i - start].append([])
+            # print len(item[i][j])
             for k in range(len(item[i][j])):
                 temp = get_vector(item[i][j][k], model)
                 if item[i][j][k] in word:
@@ -38,8 +38,8 @@ def get_test_word_vector(start, q, item, word):
                 if np.all(temp == 0):
                     continue
                 count_a = count_a + 1
-                answer_matrix[i-start][j].append(temp)
-            #print count_a
+                answer_matrix[i - start][j].append(temp)
+                # print count_a
 
     return question_matrix, answer_matrix
 
@@ -61,7 +61,6 @@ def get_test_data(length_a, length_q, start, q, item, word):
     height_a = len(answer2[0][0])
     if height_a != 320:
         height_a = 320
-
     #print len(answer[0][0][0]), length_a, length_q, len(answer2[0][0][0])
     width_a = len(answer2[0][0][0])
     data_question = np.array(question_new)
@@ -92,8 +91,14 @@ def get_test_data(length_a, length_q, start, q, item, word):
             temp = np.zeros((len(answer2[i]), height_a, width_a, 1))
             answer_data.append(temp)
             continue
-        data_answer[i] = np.array(data_answer[i])
-        temp = data_answer[i].reshape((len(answer2[i]), height_a, width_a, 1))
+        temp2 = np.array(data_answer[i])
+        #print temp2
+        #for number in range(len(temp2)):
+        #    print len(temp2[number])
+        #    print len(temp2[number][0])
+            #for number2 in range(len(data_answer[i][number])):
+            #    print len(data_answer[i][number][number2])
+        temp = temp2.reshape((len(answer2[i]), height_a, width_a, 1))
         answer_data.append(temp)
     return question_data, answer_data
 
@@ -108,14 +113,14 @@ def get_test_label(start):
         if count < start:
             count = count + 1
             continue
-        if count >= start+5:
+        if count >= start + 5:
             break
         file_dict_temp = json.loads(line)
         passages_list = file_dict_temp['passages']
         label.append([])
         for item in passages_list:
             temp = item['label']
-            label[count-start].append(temp)
+            label[count - start].append(temp)
         count = count + 1
     label = np.array(label)
     return label

@@ -9,11 +9,11 @@ from keras.models import load_model, model_from_json
 from keras import regularizers
 from keras import initializers
 from keras.utils.np_utils import to_categorical
-from evaluate2 import *
+from evaluate3 import *
 from frequency import *
+import pickle
 import os
 import sys
-import pickle
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -21,7 +21,7 @@ sys.setdefaultencoding("utf-8")
 #config = tf.ConfigProto()
 #config.gpu_options.allow_growth = True
 #session = tf.Session(config=config)
-#K.set_session(session)
+#K.set_session(session)x
 
 def compute_score(model, length_a, length_q):
     train_file_dir = './'
@@ -38,10 +38,11 @@ def compute_score(model, length_a, length_q):
     #f = open(os.path.join(train_file_dir, train_file_name), 'r')
     Total_score_dcg3 = []
     Total_score_dcg5 = []
-    for i in range(5551*5):
-        Total_score_dcg3.append(3.84540149586)
-        Total_score_dcg5.append(5.25667576762)
-    for echo in range(5551, 160+5600, 1):
+    #2476
+    for i in range(5551):
+        Total_score_dcg3.append(4.00770684819)
+        Total_score_dcg5.append(5.46699756308)
+    for echo in range(5551, 5600+160,1):
         print 'the echo is', echo
         if echo != 5551:
             [test_question, test_answer] = get_test_data(length_a, length_q, echo*5, q, item, word)
@@ -67,14 +68,14 @@ def compute_score(model, length_a, length_q):
                 temp_score = np.array(temp_score)
             else:
                 temp_score = np.array(temp)
-            if not os.path.exists('./CNNModel4'):
-                os.makedirs('./CNNModel4')
-            file_object = open('./CNNModel4/%d' % (echo * 5 + i), 'w')
+            if not os.path.exists('./CNNModel'):
+                os.makedirs('./CNNModel')
+            file_object = open('./CNNModel/%d' % (echo * 5 + i), 'w')
             print temp_score
             for my_number in range(len(temp_score)):
                 a = "%d  %lf \n" % (temp_label[my_number], temp_score[my_number])
                 file_object.write(a)
-            
+
             temp_sort = np.argsort(temp_score)
             temp_sort = temp_sort[-1::-1]
             Dcg3 = 0
@@ -96,7 +97,6 @@ def compute_score(model, length_a, length_q):
     del item
     M = np.mean(Total_score_dcg3)
     return M
-
 
 
 def Margin_Loss(y_true, y_pred):
@@ -145,11 +145,12 @@ if __name__ == '__main__':
     train_file_dir = './'
     train_file_name = 'train.2.json'
     #[q, item] = process_train_file(train_file_dir, train_file_name)
-    train_file_name = 'CCIR_train_2_word_num.txt'
-    word = frequency_word(train_file_dir, train_file_name)
-    # f = open(os.path.join(train_file_dir, train_file_name), 'r')
-    # length_a, length_q = find_max(q, item, word)
-    # print length_a, length_q
+    #f1 = file('q.pkl', 'wb')
+    #f2 = file('item.pkl', 'wb')
+    #pickle.dump(q, f1, True)
+    #pickle.dump(item, f2, True)
+    #f1.close()
+    #f2.close()
     #f3 = file('q.pkl', 'rb')
     #f4 = file('item.pkl', 'rb')
     #q = pickle.load(f3)
@@ -157,33 +158,38 @@ if __name__ == '__main__':
     #f3.close()
     #f4.close()
 
+    train_file_name = 'CCIR_train_2_word_num.txt'
+    word = frequency_word(train_file_dir, train_file_name)
+    # f = open(os.path.join(train_file_dir, train_file_name), 'r')
+    # length_a, length_q = find_max(q, item, word)
+    # print length_a, length_q
+
     length_a = 320
     length_q = 30
     print length_a, length_q
     model = cnn(length_a, length_q, 128, 128)
-    # model = model_from_json(open('my_model_architecture.json').read())
-    model.load_weights('my_model_weights4.h5')
-    for echo in range(15312,28000,1):
+    #model = model_from_json(open('my_model_architecture3.json').read())
+    model.load_weights('my_model_weights3.h5')
+    for echo in range(1693, 5600, 1):
         continue
         print 'the echo is', echo
-        data_question, data_answer, height_a, height_q, width_a, width_q = get_train_data(echo, length_a,length_q, q, item, word)
-        label = get_label(echo)
+        data_question, data_answer, height_a, height_q, width_a, width_q = get_train_data(echo*5, length_a,length_q, q, item, word)
+        label = get_label(echo*5)
         print len(data_answer[0])
         if len(data_answer[0]) == 320:
             #model.fit([data_question, data_answer], label, batch_size=5, nb_epoch=2)
             t = model.train_on_batch([data_question, data_answer], label)
             print 'loss=', t
             json_string = model.to_json()
-            open('my_model_architecture4.json','w').write(json_string)
-            model.save_weights('my_model_weights4.h5')
+            open('my_model_architecture3.json','w').write(json_string)
+            model.save_weights('my_model_weights3.h5')
         del data_answer
         del data_question
         del label
-    #model.save('my_model4.h5')
-    #model.save_weights('my_model_weights4.h5')
+    #model.save('my_model3.h5')
+    #model.save_weights('my_model_weights3.h5')
     #del q
     #del item
     #print(model.summary())
     M = compute_score(model, length_a, length_q)
     print M
-

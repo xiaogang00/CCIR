@@ -37,6 +37,9 @@ def compute_score(model, length_a, length_q):
         for i in range(len(test_question)):
             #if i != 0:
             #    continue
+            print len(test_answer[i][0])
+            if len(test_answer[i][0]) != 320:
+                continue
             temp = model.predict([test_question[i], test_answer[i]], batch_size=len(test_question[i]))
             #layer_name = 'max_pooling2d_2'
             #layer_name = 'conv2d_4'

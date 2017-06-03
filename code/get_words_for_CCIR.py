@@ -22,6 +22,8 @@ def process_train_file(train_file_dir,train_file_name):
     answer = []
     count = 0
     for line in f:
+        if count != 0 :
+            continue
         file_dict_temp = json.loads(line)
         query = file_dict_temp['query']
         query = re.sub(r1," " ,query)
@@ -47,8 +49,8 @@ def process_train_file(train_file_dir,train_file_name):
 
 if __name__ == '__main__':
     train_file_dir = './'
-    train_file_name = 'train.1.json'
+    train_file_name = 'json.longshort.new.all'
     [q, item] = process_train_file(train_file_dir, train_file_name)
-    print len(q)
-    print len(item[0][1])
+    print q
+    print len(item[0])
 

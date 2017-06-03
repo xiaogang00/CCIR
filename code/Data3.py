@@ -3,6 +3,7 @@ from get_words_for_CCIR import *
 import gensim
 import numpy as np
 import sys
+
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -27,33 +28,33 @@ def my_padding(data_q, data_a, length_a, length_q):
     if length_q != 0 and length_a != 0:
         for i in range(len(data_q)):
             m = len(data_q[i])
-            a = int((length_q - m)/2)
+            a = int((length_q - m) / 2)
             b = length_q - m - a
             for j in range(a):
                 temp = np.array([0 for k in range(128)])
                 data_q[i].append(temp)
             for j in range(b):
                 temp = np.array([0 for k in range(128)])
-                data_q[i].insert(0,temp)
+                data_q[i].insert(0, temp)
 
         for i in range(len(data_a)):
             for j in range(len(data_a[i])):
                 m = len(data_a[i][j])
-                a = int((length_a-m))/2
-                b = length_a-m-a
+                a = int((length_a - m)) / 2
+                b = length_a - m - a
                 for number in range(a):
                     temp = np.array([0 for k in range(128)])
                     data_a[i][j].append(temp)
                 for number in range(b):
                     temp = np.array([0 for k in range(128)])
-                    data_a[i][j].insert(0,temp)
+                    data_a[i][j].insert(0, temp)
     return data_a, data_q
 
 
 def find_max(q, item, word):
-    #train_file_dir = './'
-    #train_file_name = 'train.1.json'
-    #[q, item] = process_train_file(train_file_dir, train_file_name)
+    # train_file_dir = './'
+    # train_file_name = 'train.1.json'
+    # [q, item] = process_train_file(train_file_dir, train_file_name)
     # question_matrix = []
     # answer_matrix = []
     gensim_model = "wiki.zh.text.model"
@@ -68,13 +69,13 @@ def find_max(q, item, word):
                 continue
             if np.all(temp == 0):
                 continue
-            count = count+1
+            count = count + 1
         len_q.append(count)
 
     for i in range(len(item)):
         len_a.append([])
         for j in range(len(item[i])):
-            count = 0 
+            count = 0
             for k in range(len(item[i][j])):
                 temp = get_vector(item[i][j][k], model)
                 if item[i][j][k] in word:
@@ -110,15 +111,15 @@ def get_vector(word, model):
 
 
 def get_word_vector(start, q, item, word):
-    #train_file_dir = './'
-    #train_file_name = 'train.1.json'
-    #[q, item] = process_train_file(train_file_dir, train_file_name)
+    # train_file_dir = './'
+    # train_file_name = 'train.1.json'
+    # [q, item] = process_train_file(train_file_dir, train_file_name)
     question_matrix = []
     answer_matrix = []
     gensim_model = "wiki.zh.text.model"
     model = gensim.models.Word2Vec.load(gensim_model)
-    
-    for i in range(start, start+1, 1):
+
+    for i in range(start, start + 5, 1):
         question_matrix.append([])
         for j in range(len(q[i])):
             temp = get_vector(q[i][j], model)
@@ -126,32 +127,32 @@ def get_word_vector(start, q, item, word):
                 continue
             if np.all(temp == 0):
                 continue
-            question_matrix[i-start].append(temp)
+            question_matrix[i - start].append(temp)
 
-    for i in range(start, start+1, 1):
+    for i in range(start, start + 5, 1):
         answer_matrix.append([])
         for j in range(len(item[i])):
-            answer_matrix[i-start].append([])
+            answer_matrix[i - start].append([])
             for k in range(len(item[i][j])):
                 temp = get_vector(item[i][j][k], model)
                 if item[i][j][k] in word:
                     continue
                 if np.all(temp == 0):
                     continue
-                answer_matrix[i-start][j].append(temp)
+                answer_matrix[i - start][j].append(temp)
 
     return question_matrix, answer_matrix
 
 
-def get_train_data(start,lengtha, lengthq, q, item, word):
+def get_train_data(start, lengtha, lengthq, q, item, word):
     question, answer = get_word_vector(start, q, item, word)
-    answer2,question2 = my_padding(question, answer, lengtha, lengthq)
+    answer2, question2 = my_padding(question, answer, lengtha, lengthq)
     question_new = []
     for i in range(len(question2)):
         question_new.append([])
         for j in range(len(answer2[i])):
             question_new[i].append(question2[i])
-    
+
     del question
     del answer
     del question2
@@ -188,7 +189,7 @@ def get_train_data(start,lengtha, lengthq, q, item, word):
     del answer2
     final_answer = np.array(final_answer)
     final_question = np.array(final_question)
-    return final_question, final_answer,height_a, height_q, width_a, width_q
+    return final_question, final_answer, height_a, height_q, width_a, width_q
 
 
 def get_label(start):
@@ -201,7 +202,7 @@ def get_label(start):
         if count < start:
             count = count + 1
             continue
-        if count >= start + 1:
+        if count >= start + 5:
             break
         file_dict_temp = json.loads(line)
         passages_list = file_dict_temp['passages']
@@ -214,7 +215,7 @@ def get_label(start):
                 temp = 1
             elif temp == 2:
                 temp = 2
-            label[count-start].append(temp)
+            label[count - start].append(temp)
         count = count + 1
     final_label = []
     for i in range(len(label)):

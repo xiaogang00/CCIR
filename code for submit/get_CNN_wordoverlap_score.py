@@ -5,7 +5,7 @@
 #随后对于答案长度进行判断，对于答案长度大于320的就不使用CNN的结果了，之后对于相同词的数目进行判断，对于相同词数目大于n的，就用wordoverlap进行判断，得到相关的wordoverlap的得分
 #对于相同词数目小于n的，直接使用CNN的得分
 
-#sys.argv[1]为wordoverlap所分解出的问题与答案的单词文件的目录，sys.argv[2]为训练数据中共有的问题数目(39990)
+#sys.argv[1]为wordoverlap所分解出的问题与答案的单词文件的目录，sys.argv[2]为测试数据中共有的问题数目(包括无法分词的问题)
 #sys.argv[3]为近义词的存储位置，sys.argv[4]为计入相同词的词频界限m，sys.argv[5]为利用wordoverlap进行score判断的词数界限n，sys.argv[6]为wordoverlap的score存储目录的前缀
 #sys.argv[7]为CNN的分数文件位置，sys.argv[8]为DCG的k值
 
@@ -56,7 +56,7 @@ def calu_DCG(answer_score_file,k):
     return DCG_result
 
 def get_delete_word(same_word_limit):
-    file_read = open('/home/dcd-qa/MLT_code_3/word2vec/CCIR_train_3_word_num.txt','rb')
+    file_read = open('/home/duanxinyu/MLT/CCIR/MLT_code_test/word2vec/CCIR_train_test_word_num.txt','rb')
     #file_read = open('D:\\CCIR\\code_for_json3\\wordoverlap_file\\CCIR_train_3_word_num.txt','rb')
     word_delete = []
     for line in file_read.readlines():
@@ -76,7 +76,7 @@ def get_file_wordoverlap_score(wordoverlap_file_path,wordoverlap_new_dir,index,s
     question_line = file_read.readline()
     question_line_list = question_line.strip().split('\t')
     question_line_list.remove('question')
-    file_write_name = os.path.join(wordoverlap_new_dir,str(index+1))
+    file_write_name = os.path.join(wordoverlap_new_dir,str(index)) #test的question的id从0开始计数
     file_write = open(file_write_name,'ab+')
     for line in file_read.readlines():
         answer_temp_line_list = line.strip().split('\t')
@@ -100,9 +100,13 @@ def get_file_wordoverlap_score(wordoverlap_file_path,wordoverlap_new_dir,index,s
     
 def get_wordoverlap_file_score(wordoverlap_file_dir,question_num,synonym_dir,wordoverlap_limit,wordoverlap_new_dir,delete_word_list):
     for index in range(question_num):
+        if (index + 1)%1000 == 1:
+            print 'Now for line : ' + str(index+1) + '\n'
         same_word_num = 0
         wordoverlap_file_path = os.path.join(wordoverlap_file_dir,str(index+1))
         synonym_file_name = os.path.join(synonym_dir,str(index+1))
+        if not os.path.isfile(synonym_file_name) or not os.path.join(wordoverlap_file_path):
+            continue
         file_synonym_read = open(synonym_file_name,'rb')
         synonym_dict_temp = {}
         for line in file_synonym_read.readlines():
@@ -139,7 +143,7 @@ def get_DCG_final_score(wordoverlap_new_dir,CNN_file_dir,question_num,k):
     #对于wordoverlap_new_dir含有的分数，按照wordoverlap的分数处理，对于wordoverlap_new_dir没有的分数，按照CNN的分数来处理
     DCG_score_list = []
     for index in range(question_num):
-        file_wordoverlap_path = os.path.join(wordoverlap_new_dir,str(index+1))
+        file_wordoverlap_path = os.path.join(wordoverlap_new_dir,str(index))
         file_CNN_path = os.path.join(CNN_file_dir,str(index))
         if os.path.isfile(file_wordoverlap_path):
             DCG_score_temp = calu_DCG(file_wordoverlap_path,k)
@@ -161,8 +165,8 @@ def main():
     k = int(sys.argv[8])
     delete_word_list = get_delete_word(same_word_limit)
     get_wordoverlap_file_score(wordoverlap_file_dir,question_num,synonym_dir,wordoverlap_limit,wordoverlap_new_dir,delete_word_list)
-    DCG_avg = get_DCG_final_score(wordoverlap_new_dir,CNN_file_dir,question_num,k)
-    print 'DCG@' + str(k) + ' of same_word_limit:' + str(same_word_limit) + ' wordoverlap_limit:' + str(wordoverlap_limit) + ' is : ' + str(DCG_avg) + '\n\n'
+    #DCG_avg = get_DCG_final_score(wordoverlap_new_dir,CNN_file_dir,question_num,k)
+    #print 'DCG@' + str(k) + ' of same_word_limit:' + str(same_word_limit) + ' wordoverlap_limit:' + str(wordoverlap_limit) + ' is : ' + str(DCG_avg) + '\n\n'
     
 if __name__ == '__main__':
     main()

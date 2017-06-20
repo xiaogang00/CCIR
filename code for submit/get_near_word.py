@@ -2,8 +2,8 @@
 # -*-coding: utf-8 -*-
 
 #该程序用于构建近义词表，并把每个问题的近义词表存入一个文件中
-#sys.argv[4](为1个0~1之间的数)用于输入余弦距离大于多大比例的余弦距离才会被定义为近义词（余弦距离越大，代表两个向量越相似），sys.argv[5]用于定义最后的近义词会被输入到哪个目录中，近义词表的文件名也为1、2、3……
-#sys.argv[1]是wordoverlap的分词的目录，sys.argv[2]是总的问题的个数，sys.argv[3]是word2vec的model的目录
+#sys.argv[4](为1个0~1之间的数)用于输入余弦距离大于多大比例的余弦距离才会被定义为近义词（余弦距离越大，代表两个向量越相似），sys.argv[5]用于定义最后的近义词会被输入到哪个目录中，近义词表的文件名也为对应的query_id……
+#sys.argv[1]是wordoverlap的分词的目录，sys.argv[2]是总的问题的个数(包括无法分词的问题)，sys.argv[3]是word2vec的model的目录
 
 import sys
 reload(sys)
@@ -29,7 +29,9 @@ def get_synonym_file(question_file_dir,question_num,model,cosine_min_percentage,
     for question_index in xrange(question_num):
         if (question_index+1)%1000 == 1:
             print 'Now get synonym for line : ' + str(question_index+1) + '\n'
-        file_read_name = os.path.join(question_file_dir,str(question_index+1))
+        file_read_name = os.path.join(question_file_dir,str(question_index))
+        if not os.path.isfile(file_read_name):
+            continue
         file_read = open(file_read_name,'rb+')
         question_line = file_read.readline()
         question_line_list = question_line.strip().split('\t')
@@ -53,7 +55,7 @@ def get_synonym_file(question_file_dir,question_num,model,cosine_min_percentage,
         cosine_num_list_sorted = sorted(cosine_num_list)
         k = int(len(cosine_num_list)*cosine_min_percentage)
         cosine_num_limit = cosine_num_list_sorted[k]
-        file_write = open(os.path.join(synonym_dir,str(question_index+1)),'ab+')
+        file_write = open(os.path.join(synonym_dir,str(question_index)),'ab+')
         for cosine_tuple in cosine_num_dict:
             #print "question_word : " + str(cosine_tuple[0]) + '\n'
             #print "answer_word : " + str(cosine_tuple[1]) + '\n'

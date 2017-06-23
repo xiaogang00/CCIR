@@ -69,10 +69,10 @@ def process_train_file(train_file_dir,train_file_name,write_file_name,error_file
             #item_passage_text_temp_1 = item_passage_text_temp_1.encode('utf-8')
             #print item_passage_text_temp_1.__class__
             #print 'item_passage_text_temp_1 : ' + str(item_passage_text_temp_1)
-            item_passage_text_temp_word_list = get_words(item_passage_text_temp_1)
-            if item_passage_text_temp_word_list[][0] == 'ERROR':
+            item_passage_text_temp_word_list = get_words(item_passage_text_temp_1,query_id)
+            if item_passage_text_temp_word_list[0] == 'ERROR':
                 error_file = open(error_file_path,'ab+')
-                error_file.write(str(query_word_list[1]) + '\n')
+                error_file.write(str(item_passage_text_temp_word_list[1]) + '\n')
                 error_file.close()
                 break
             write_sentence_word(write_file_name,item_passage_text_temp_word_list)

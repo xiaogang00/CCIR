@@ -1,30 +1,60 @@
 #! /usr/env/bin python
 # -*-coding: utf-8 -*-
 
+# 本程序是从json文件当中读取我们所需要的问题，答案以及其对应的queryid，在其中对于不能分词的情况选择跳过
 import pynlpir
 import json
 import os
 import re
-
+import string
 
 def get_words(sentence):
     # 输入为一个string的句子，输出为这个句子的分解的单词
     pynlpir.open()
     sentence_words_list = pynlpir.segment(sentence, pos_tagging=False)
     return sentence_words_list
-    
+
+# def process_id(train_file_dir,train_file_name, unable_file_dir, unable_file_name):
+def process_id(train_file_dir,train_file_name):
+    # 本程序用来处理训练文件，对于其中的每个问题的句子进行分割，构造query的词语构成的list，及答案的词语构成的list
+    # train_file_dir为训练文件的路径，train_file_name为训练文件的名字
+    unable = open(os.path.join(train_file_dir, 'cannot_segment_query_id.txt'), 'r')
+    lines = unable.readlines()
+    unable_id = []
+    for line in lines:
+        a = line.replace("\n", "").split("	")
+        unable_id.append(string.atoi(a[0]))
+    f = open(os.path.join(train_file_dir, train_file_name),'r')
+    qaid = []
+    for line in f:
+        file_dict_temp = json.loads(line)
+        temp_id = file_dict_temp['query_id']
+        if temp_id in unable_id:
+            continue
+        qaid.append(temp_id)
+    return qaid
+
+
 def process_train_file(train_file_dir,train_file_name):
     # 本程序用来处理训练文件，对于其中的每个问题的句子进行分割，构造query的词语构成的list，及答案的词语构成的list
     # train_file_dir为训练文件的路径，train_file_name为训练文件的名字
     f = open(os.path.join(train_file_dir,train_file_name),'r')
-    r1 = u"[a-zA-Z0-9\σ\δ\≤\〔\〕\『\』\\\ｔ\Ｔ\Ｌ\■\Ｆ\ａ\ｌ\ｓ\ｈ\ㄅ\ㄨ\ˋ\ㄧ\ㄡ\ㄗ\ㄓ\ˇ\ｒ\ｏ\ｔ\ｉ\ｎ\ｇ\ｕ\ｅ\Ｒ\Ｏ\Ｔ\Ｉ\Ｎ\Ｇ\＋\→\／\～\β\Ｍ\Ｖ\Ｐ\Ｎ\Ｂ\Ａ\Ｃ\ｖ\Ｄ\Ｌ\Ｗ\Ｇ\ɡ\ɑ\Ｑ\ｄ\·\［\］\à\①\ī\é\í\ǔ\ì\ó\ù\｛\｝\；\１\８\ｋ\７\５\％\２\Ｋ\０\４\＝\６\±\×\’\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\，\。\?\★\、\…\【\】\《\》\？\“\”\‘\’\！\[\]\^\_\`\{\|\}\~\]\+\（\）\~\+\—\：\.\．]"
+    unable = open(os.path.join(train_file_dir, 'cannot_segment_query_id.txt'), 'r')
+    r1 = u"[\⊙\【\】\€發\Q\Cr\C\┙\τ\o\ζ\π\┮\∷\�\←\☆\≤\〔\〕\『\』\\\■\ˋ\ˇ\＋\→\／\～\·\［\］\①\｛\｝\；\％\＝\±\×\’\!\"\#\$\%\&\'\(\)\*\+\,\-\.\/\:\;\<\=\>\?\@\，\。\?\★\、\…\【\】\《\》\？\“\”\‘\’\！\[\]\^\_\`\{\|\}\~\]\+\（\）\~\+\—\：\.\．]"
     question = []
     answer = []
     count = 0
+    lines = unable.readlines()
+    unable_id = []
+    for line in lines:
+        a = line.replace("\n", "").split("	")
+        unable_id.append(string.atoi(a[0]))
+    # print unable_id
     for line in f:
-        if count != 0 :
-            continue
         file_dict_temp = json.loads(line)
+        temp_id = file_dict_temp['query_id']
+        if temp_id in unable_id:
+            continue
         query = file_dict_temp['query']
         query = re.sub(r1," " ,query)
         query_word_list = get_words(query)

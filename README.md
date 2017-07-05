@@ -5,4 +5,6 @@ This is match for The 23rd China Conference on Information Retrieval, The title 
 
 * In the file of ZJUQAer, there are codes and documents which we submit as final result. We use the model of CNN and wordoverlap to acquire the final result.
 
+* Our final rank is 11/40.
+
   ​
